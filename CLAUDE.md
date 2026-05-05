@@ -152,6 +152,12 @@ we must:
 
 ## Guardrails
 
+- **Suis les instructions à la lettre.** L'utilisateur enchaîne des prompts
+  dans un ordre logique : chaque prompt définit son propre périmètre. Ne
+  prends aucune initiative au-delà de ce qui est explicitement demandé
+  (pas de refactor opportuniste, pas de "petit bonus", pas de mise à jour
+  silencieuse de fichiers non listés). Si une dépendance casse, c'est
+  attendu — le prompt suivant la corrigera.
 - **Do not** ship features that aren't on the roadmap without updating this file.
 - **Do not** add a database before v0.3 — the MVP is stateless on purpose.
 - **Do not** add auth until v1.
