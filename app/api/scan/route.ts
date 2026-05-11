@@ -6,14 +6,20 @@ import { cache } from "@/lib/cache";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const NAME_RE = /^[A-Za-z0-9._-]+$/;
-const NAME_MAX = 100;
+// GitHub username/org: alphanumeric + hyphens only, max 39 chars
+const OWNER_RE = /^[A-Za-z0-9-]+$/;
+const OWNER_MAX = 39;
+// GitHub repo name: alphanumeric + hyphens + dots + underscores, max 100 chars
+const REPO_RE = /^[A-Za-z0-9._-]+$/;
+const REPO_MAX = 100;
 
 const RATE_PER_IP = 20;
 const RATE_GLOBAL = 500;
 const RATE_WINDOW_MS = 60_000;
 const SCAN_TTL_MS = 10 * 60 * 1000;
 
+// ⚠️ In-memory rate limiter resets on cold start.
+// For production scale, replace with Vercel KV or Upstash Redis.
 const ipHits = new Map<string, number[]>();
 const globalHits: number[] = [];
 
@@ -80,11 +86,18 @@ export async function POST(request: Request) {
   const repo = typeof body.repo === "string" ? body.repo.trim() : "";
 
   if (!owner || !repo) return jsonError("`owner` and `repo` are required.", 400);
-  if (owner.length > NAME_MAX || repo.length > NAME_MAX)
-    return jsonError("Repository or owner name too long.", 400);
-  if (!NAME_RE.test(owner) || !NAME_RE.test(repo))
+  if (owner.length > OWNER_MAX)
+    return jsonError(`Owner name too long (max ${OWNER_MAX} characters).`, 400);
+  if (repo.length > REPO_MAX)
+    return jsonError(`Repository name too long (max ${REPO_MAX} characters).`, 400);
+  if (!OWNER_RE.test(owner))
     return jsonError(
-      "Invalid format. Allowed characters: letters, digits, period, hyphen, underscore.",
+      "Invalid owner format. Allowed characters: letters, digits, hyphen.",
+      400
+    );
+  if (!REPO_RE.test(repo))
+    return jsonError(
+      "Invalid repository format. Allowed characters: letters, digits, period, hyphen, underscore.",
       400
     );
 

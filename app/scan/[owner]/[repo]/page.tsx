@@ -104,6 +104,13 @@ export default function ScanResultsPage({
   const [loading, setLoading] = useState(true);
 
   const runScan = useCallback(() => {
+    const OWNER_RE = /^[A-Za-z0-9-]+$/;
+    const REPO_RE = /^[A-Za-z0-9._-]+$/;
+    if (owner.length > 39 || !OWNER_RE.test(owner) || repo.length > 100 || !REPO_RE.test(repo)) {
+      setError("Invalid repository path.");
+      setLoading(false);
+      return;
+    }
     setReport(null);
     setError(null);
     setLoading(true);

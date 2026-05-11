@@ -1,3 +1,15 @@
+const OWNER_RE = /^[A-Za-z0-9-]+$/;
+const REPO_RE = /^[A-Za-z0-9._-]+$/;
+const OWNER_MAX = 39;
+const REPO_MAX = 100;
+
+function validateParts(owner: string, repo: string): { owner: string; repo: string } | null {
+  if (!owner || !repo) return null;
+  if (owner.length > OWNER_MAX || repo.length > REPO_MAX) return null;
+  if (!OWNER_RE.test(owner) || !REPO_RE.test(repo)) return null;
+  return { owner, repo };
+}
+
 export function parseRepoInput(input: string): { owner: string; repo: string } | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
@@ -6,12 +18,12 @@ export function parseRepoInput(input: string): { owner: string; repo: string } |
     /^(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/\s]+)\/([^\/\s#?]+)/i
   );
   if (urlMatch) {
-    return { owner: urlMatch[1], repo: urlMatch[2].replace(/\.git$/, "") };
+    return validateParts(urlMatch[1], urlMatch[2].replace(/\.git$/, ""));
   }
 
   const slugMatch = trimmed.match(/^([^\/\s]+)\/([^\/\s]+)$/);
   if (slugMatch) {
-    return { owner: slugMatch[1], repo: slugMatch[2].replace(/\.git$/, "") };
+    return validateParts(slugMatch[1], slugMatch[2].replace(/\.git$/, ""));
   }
 
   return null;
