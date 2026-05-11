@@ -1,6 +1,6 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Reveal } from "./reveal";
+import { Reveal } from "./Reveal";
 
 interface Report {
   date: string;
@@ -14,7 +14,7 @@ const REPORTS: Report[] = [
   {
     date: "MAR 03, 2026",
     tag: "npm",
-    title: "Top 50 npm packages — week 9 risk pulse",
+    title: "Top 50 npm packages â€” week 9 risk pulse",
     excerpt:
       "Three packages crossed the high-risk threshold this week. moment/moment moved to critical after 67 days without a commit.",
     href: "#",
@@ -24,13 +24,13 @@ const REPORTS: Report[] = [
     tag: "npm",
     title: "Bot-driven commits inflate health scores",
     excerpt:
-      "We isolated 14 packages whose recent activity is 90%+ dependabot. Velocity scores corrected by an average of −18 pts.",
+      "We isolated 14 packages whose recent activity is 90%+ dependabot. Velocity scores corrected by an average of âˆ’18 pts.",
     href: "#",
   },
   {
     date: "FEB 17, 2026",
     tag: "npm",
-    title: "Maintainer hand-offs — what we saw in February",
+    title: "Maintainer hand-offs â€” what we saw in February",
     excerpt:
       "Six high-traffic packages changed primary maintainer this month. Two recovered, four degraded into single-contributor risk.",
     href: "#",
@@ -85,3 +85,4 @@ export function WeeklyReports() {
     </section>
   );
 }
+

@@ -1,6 +1,6 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Check } from "lucide-react";
-import { Reveal } from "./reveal";
+import { Reveal } from "./Reveal";
 
 interface Plan {
   name: string;
@@ -118,3 +118,4 @@ function PlanCard({ plan }: { plan: Plan }) {
     </div>
   );
 }
+

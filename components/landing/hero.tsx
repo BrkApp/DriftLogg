@@ -1,4 +1,4 @@
-import { Reveal } from "./reveal";
+﻿import { Reveal } from "./Reveal";
 import { ScanInput } from "@/components/shared/ScanInput";
 
 export function Hero() {
@@ -17,7 +17,7 @@ export function Hero() {
         <Reveal delay={120}>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-dl-fg-muted">
             DriftLogg monitors open source package health and predicts decay
-            60–90 days before your build breaks.
+            60â€“90 days before your build breaks.
           </p>
         </Reveal>
         <Reveal delay={200}>
@@ -27,10 +27,11 @@ export function Hero() {
         </Reveal>
         <Reveal delay={280}>
           <p className="mt-4 font-mono text-[13px] text-dl-fg-muted">
-            No signup required · Free for 1 repo · Takes 30 seconds
+            No signup required Â· Free for 1 repo Â· Takes 30 seconds
           </p>
         </Reveal>
       </div>
     </section>
   );
 }
+

@@ -1,38 +1,12 @@
-import type { RepoHealthData } from "./github";
+/** Drift score algorithm — pure functions, no side effects. */
 
-export type Risk = "low" | "medium" | "high" | "critical";
-
-export interface ScoreBreakdown {
-  velocity: number;
-  responsiveness: number;
-  community: number;
-  freshness: number;
-  trust: number;
-  social: number;
-}
-
-export interface HealthScore {
-  score: number;
-  risk: Risk;
-  breakdown: ScoreBreakdown;
-  signals: string[];
-  prediction: string;
-}
-
-const MAX = {
-  velocity: 25,
-  responsiveness: 20,
-  community: 15,
-  freshness: 15,
-  trust: 10,
-  social: 15,
-} as const;
+import type { RepoHealthData, Risk, ScoreBreakdown, HealthScore } from "./types";
+import { BREAKDOWN_MAX as MAX } from "./constants";
 
 function scoreVelocity(d: RepoHealthData): number {
   const recent = d.commitsLast30Days;
   const prior = d.commitsPrior60Days;
   if (recent === 0 && prior === 0) {
-    // Established high-star projects: partial credit even when fully dormant in 90-day window
     if (
       d.repoAgeYears >= 5 &&
       d.stars >= 25000 &&
@@ -117,7 +91,6 @@ function scoreFreshness(d: RepoHealthData): number {
   else if (dr < 365) releasePts = 3;
   else releasePts = 0;
 
-  // Recent release without recent human commits may be bot-driven — discount it
   if (dr !== null && Number.isFinite(d.daysSinceLastCommit) && d.daysSinceLastCommit > 30) {
     releasePts = Math.min(releasePts, 4);
   }
@@ -143,7 +116,8 @@ function scoreSocial(d: RepoHealthData): number {
   if (ss.isMaintenanceModeReadme) score += 3;
   if (ss.hasDeprecatedBadge) score -= 10;
   const total = ss.helpWantedCount + ss.staleWontfixCount;
-  if (total > 0 && ss.staleWontfixCount / total > 0.5 && d.activeContributors30d < 10) score -= 5;
+  if (total > 0 && ss.staleWontfixCount / total > 0.5 && d.activeContributors30d < 10)
+    score -= 5;
   if (d.weeklyNpmDownloads !== null) {
     const hasRawVelocity = d.commitsLast30Days > 0 || d.commitsPrior60Days > 0;
     if (hasRawVelocity) {
@@ -158,11 +132,7 @@ function scoreSocial(d: RepoHealthData): number {
 function classifyRisk(score: number, d: RepoHealthData): Risk {
   if (d.archived || d.disabled) return "critical";
   const raw: Risk =
-    score >= 80 ? "low" :
-    score >= 60 ? "medium" :
-    score >= 35 ? "high" :
-    "critical";
-  // If README explicitly signals maintenance / deprecated, cap at HIGH
+    score >= 80 ? "low" : score >= 60 ? "medium" : score >= 35 ? "high" : "critical";
   if (
     (d.socialSignals.isMaintenanceModeReadme || d.socialSignals.hasDeprecatedBadge) &&
     (raw === "low" || raw === "medium")
@@ -172,8 +142,8 @@ function classifyRisk(score: number, d: RepoHealthData): Risk {
   return raw;
 }
 
-function months(daysValue: number): number {
-  return Math.max(1, Math.floor(daysValue / 30));
+function months(days: number): number {
+  return Math.max(1, Math.floor(days / 30));
 }
 
 function buildSignals(d: RepoHealthData): string[] {
@@ -207,11 +177,14 @@ function buildSignals(d: RepoHealthData): string[] {
     out.push("No commit activity in the last 90 days");
   }
 
-  // Bus factor & maintainer signals
   if (d.commitsLast30Days === 0 && !d.archived && !d.disabled) {
     out.push("No human commits in the last 30 days — maintainer may have stepped back");
   }
-  if (d.topContributorShare90d > 0.8 && d.activeContributors90d >= 1 && (d.commitsLast30Days + d.commitsPrior60Days) >= 3) {
+  if (
+    d.topContributorShare90d > 0.8 &&
+    d.activeContributors90d >= 1 &&
+    d.commitsLast30Days + d.commitsPrior60Days >= 3
+  ) {
     const pct = Math.round(d.topContributorShare90d * 100);
     out.push(`Single maintainer risk: one contributor made ${pct}% of commits in the last 90 days`);
   }
@@ -226,9 +199,7 @@ function buildSignals(d: RepoHealthData): string[] {
 
   if (d.avgFirstResponseDays !== null) {
     if (d.avgFirstResponseDays > 14) {
-      out.push(
-        `Issues left unanswered for ${Math.round(d.avgFirstResponseDays)} days on average`
-      );
+      out.push(`Issues left unanswered for ${Math.round(d.avgFirstResponseDays)} days on average`);
     } else if (d.avgFirstResponseDays <= 1) {
       out.push("Maintainers very responsive (< 24h average)");
     }
@@ -240,17 +211,14 @@ function buildSignals(d: RepoHealthData): string[] {
     out.push(`No release in the last ${months(d.daysSinceLastRelease)} months`);
   }
 
-  if (d.stars > 0) {
-    if (d.forkStarRatio > 0.7) {
-      out.push("High fork-to-star ratio: possible community fragmentation");
-    }
+  if (d.stars > 0 && d.forkStarRatio > 0.7) {
+    out.push("High fork-to-star ratio: possible community fragmentation");
   }
 
   if (!d.license) out.push("No license detected");
   if (!d.hasSecurityPolicy) out.push("No SECURITY.md found");
   if (!d.hasFunding) out.push("No FUNDING.yml found");
 
-  // Social signals
   const ss = d.socialSignals;
   if (ss.hasDeprecatedBadge) {
     out.push("README explicitly marks this project as deprecated");
@@ -265,14 +233,10 @@ function buildSignals(d: RepoHealthData): string[] {
     out.push("Financially supported via GitHub Sponsors or Open Collective");
   }
   if (ss.helpWantedCount > 0) {
-    out.push(
-      `${ss.helpWantedCount} open "help wanted" issues — community contributions welcome`
-    );
+    out.push(`${ss.helpWantedCount} open "help wanted" issues — community contributions welcome`);
   }
   if (ss.staleWontfixCount > 10) {
-    out.push(
-      `${ss.staleWontfixCount} open issues labeled "stale" — limited maintenance bandwidth`
-    );
+    out.push(`${ss.staleWontfixCount} open issues labeled "stale" — limited maintenance bandwidth`);
   }
   if (ss.hasDiscussions) {
     out.push("GitHub Discussions enabled on this repository");
@@ -281,9 +245,12 @@ function buildSignals(d: RepoHealthData): string[] {
   if (d.weeklyNpmDownloads !== null && d.weeklyNpmDownloads > 0) {
     const n = d.weeklyNpmDownloads;
     const fmt =
-      n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` :
-      n >= 1_000     ? `${Math.round(n / 1_000)}k`       : `${n}`;
-    out.push(`📦 ${fmt} weekly npm downloads`);
+      n >= 1_000_000
+        ? `${(n / 1_000_000).toFixed(1)}M`
+        : n >= 1_000
+        ? `${Math.round(n / 1_000)}k`
+        : `${n}`;
+    out.push(`${fmt} weekly npm downloads`);
   }
 
   return out;
@@ -334,13 +301,13 @@ export function computeHealthScore(data: RepoHealthData): HealthScore {
     social: scoreSocial(data),
   };
 
-  // Correction 1: cap responsiveness/trust for near-dormant repos
   const overrideSignals: string[] = [];
+
   if (breakdown.velocity < 5) {
     breakdown.responsiveness = Math.min(breakdown.responsiveness, 5);
     breakdown.trust = Math.min(breakdown.trust, 4);
     overrideSignals.push(
-      "⚠️ Low activity override: responsiveness and trust scores capped due to near-zero commit velocity"
+      "Low activity override: responsiveness and trust scores capped due to near-zero commit velocity"
     );
   } else if (breakdown.velocity < 10) {
     breakdown.responsiveness = Math.min(breakdown.responsiveness, 12);
@@ -350,18 +317,15 @@ export function computeHealthScore(data: RepoHealthData): HealthScore {
     );
   }
 
-  // Correction 2: social floor for large established projects
   if (data.stars > 10000 && (breakdown.velocity >= 15 || data.activeContributors90d > 50)) {
     if (breakdown.social < 10) {
       breakdown.social = 10;
       overrideSignals.push(
-        "✅ Large project baseline: social score floored due to established community indicators"
+        "Large project baseline: social score floored due to established community indicators"
       );
     }
   } else if (data.stars > 5000 && breakdown.velocity >= 10) {
-    if (breakdown.social < 7) {
-      breakdown.social = 7;
-    }
+    if (breakdown.social < 7) breakdown.social = 7;
   }
 
   const score = Math.min(

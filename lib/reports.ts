@@ -1,23 +1,11 @@
+/** Filesystem reader for Markdown reports stored under content/reports/. */
+
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import type { ReportFrontmatter, ReportMeta, Report } from "./types";
 
 const REPORTS_DIR = path.join(process.cwd(), "content", "reports");
-
-export interface ReportFrontmatter {
-  title: string;
-  date: string;
-  description: string;
-  tags: string[];
-}
-
-export interface ReportMeta extends ReportFrontmatter {
-  slug: string;
-}
-
-export interface Report extends ReportMeta {
-  content: string;
-}
 
 export function getAllReports(): ReportMeta[] {
   if (!fs.existsSync(REPORTS_DIR)) return [];

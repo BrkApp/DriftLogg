@@ -1,4 +1,4 @@
-import { Reveal } from "./reveal";
+﻿import { Reveal } from "./Reveal";
 
 interface Card {
   title: string;
@@ -90,3 +90,4 @@ export function ScoringGrid() {
     </section>
   );
 }
+

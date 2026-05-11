@@ -1,4 +1,7 @@
+/** GitHub API client — fetches raw repository health data via Octokit. */
+
 import { Octokit } from "octokit";
+import type { SocialSignals, RepoHealthData } from "./types";
 
 export type ScanErrorKind =
   | "not_found"
@@ -18,61 +21,9 @@ export class ScanError extends Error {
   }
 }
 
-export interface SocialSignals {
-  hasCommunityBadge: boolean;
-  hasDeprecatedBadge: boolean;
-  isMaintenanceModeReadme: boolean;
-  hasSponsorsFunding: boolean;
-  hasCIBadge: boolean;
-  hasDiscussions: boolean;
-  helpWantedCount: number;
-  staleWontfixCount: number;
-}
-
-export interface RepoHealthData {
-  owner: string;
-  repo: string;
-  fullName: string;
-  description: string | null;
-  url: string;
-  language: string | null;
-  license: string | null;
-  archived: boolean;
-  disabled: boolean;
-
-  stars: number;
-  forks: number;
-  forkStarRatio: number;
-  repoAgeYears: number;
-
-  lastHumanCommitAt: string | null;
-  daysSinceLastCommit: number;
-  commitsLast30Days: number;
-  commitsPrior60Days: number;
-  velocityRatio: number;
-
-  activeContributors30d: number;
-  activeContributors90d: number;
-  topContributorShare90d: number;
-  isMaintenanceModeOnly: boolean;
-
-  openIssues: number;
-  closedIssuesLast90Days: number;
-  avgFirstResponseDays: number | null;
-
-  lastReleaseAt: string | null;
-  daysSinceLastRelease: number | null;
-  lastReleaseTag: string | null;
-
-  hasSecurityPolicy: boolean;
-  hasFunding: boolean;
-  socialSignals: SocialSignals;
-  weeklyNpmDownloads: number | null;
-}
-
 const DAY_MS = 1000 * 60 * 60 * 24;
 
-// ─── Bot / automation detection ───────────────────────────────────────────────
+// ── Bot / automation detection ────────────────────────────────────────────────
 
 const BOT_LOGINS = new Set([
   "dependabot[bot]",
@@ -98,7 +49,7 @@ function isBot(login: string | null | undefined): boolean {
   return BOT_LOGINS.has(l) || l.endsWith("[bot]");
 }
 
-// ─── Maintenance-mode commit detection ───────────────────────────────────────
+// ── Maintenance-mode commit detection ─────────────────────────────────────────
 
 const MAINT_PATTERNS = [
   /^(chore|deps|build|ci)(\([^)]+\))?\s*:\s*(bump|update|upgrade|release|version)/i,
@@ -155,11 +106,7 @@ function toScanError(err: unknown): ScanError {
         403
       );
     }
-    return new ScanError(
-      "private",
-      "Access denied. The repository may be private.",
-      403
-    );
+    return new ScanError("private", "Access denied. The repository may be private.", 403);
   }
   if (status === 401) {
     return new ScanError(
@@ -201,7 +148,7 @@ async function fetchCommitWindow(
   let lastHumanCommitAt: string | null = null;
 
   const authors30 = new Set<string>();
-  const authors90 = new Map<string, number>(); // login → commit count
+  const authors90 = new Map<string, number>();
   const humanMsgs30: string[] = [];
 
   for (let page = 1; page <= 5; page++) {
@@ -218,7 +165,6 @@ async function fetchCommitWindow(
       const authorLogin = c.author?.login ?? null;
       const committerLogin = c.committer?.login ?? null;
 
-      // Skip automated bot commits entirely
       if (isBot(authorLogin) || isBot(committerLogin)) continue;
 
       const date = c.commit.author?.date ?? c.commit.committer?.date ?? null;
@@ -243,14 +189,9 @@ async function fetchCommitWindow(
     if (data.length < 100) break;
   }
 
-  // If no human commit found in 90-day window, scan recent history for the last one
   if (!lastHumanCommitAt) {
     try {
-      const { data } = await octokit.rest.repos.listCommits({
-        owner,
-        repo,
-        per_page: 20,
-      });
+      const { data } = await octokit.rest.repos.listCommits({ owner, repo, per_page: 20 });
       for (const c of data) {
         if (!isBot(c.author?.login) && !isBot(c.committer?.login)) {
           lastHumanCommitAt = c.commit.author?.date ?? null;
@@ -258,18 +199,16 @@ async function fetchCommitWindow(
         }
       }
     } catch {
-      // empty repo or no access — leave null
+      // empty repo or no access
     }
   }
 
-  // Bus factor: fraction of 90-day human commits from top contributor
   const total90 = humanLast30 + humanPrior60;
   let topContributorShare90d = 0;
   if (total90 > 0 && authors90.size > 0) {
     topContributorShare90d = Math.max(...authors90.values()) / total90;
   }
 
-  // Maintenance mode: ≥70% of last-30d human commits are pure automation/version bumps
   let isMaintenanceModeOnly = false;
   if (humanMsgs30.length >= 3) {
     const maintCount = humanMsgs30.filter(isMaintenanceMsg).length;
@@ -303,10 +242,7 @@ async function fetchIssueCounts(
       per_page: 1,
     }),
   ]);
-  return {
-    open: openRes.data.total_count,
-    closedLast90: closedRes.data.total_count,
-  };
+  return { open: openRes.data.total_count, closedLast90: closedRes.data.total_count };
 }
 
 async function fetchAvgFirstResponseDays(
@@ -367,9 +303,7 @@ async function fetchLatestRelease(
     const { data } = await octokit.rest.repos.getLatestRelease({ owner, repo });
     return { at: data.published_at ?? data.created_at, tag: data.tag_name };
   } catch (err) {
-    if ((err as { status?: number })?.status === 404) {
-      return { at: null, tag: null };
-    }
+    if ((err as { status?: number })?.status === 404) return { at: null, tag: null };
     throw err;
   }
 }
@@ -383,9 +317,7 @@ async function fileExists(
   try {
     await octokit.rest.repos.getContent({ owner, repo, path });
     return true;
-  } catch (err) {
-    const status = (err as { status?: number })?.status;
-    if (status === 404) return false;
+  } catch {
     return false;
   }
 }
@@ -448,22 +380,14 @@ async function fetchSocialSignals(
       hasDeprecatedBadge =
         /shields\.io\/badge\/[^)]*[-(](deprecated|inactive|unmaintained)/i.test(content) ||
         /^\s*#+[^#\n]*\b(deprecated|unmaintained)\b/im.test(content) ||
-        /\bthis (project|package|repo|repository) is (deprecated|unmaintained|no longer maintained)\b/i.test(
-          content
-        );
+        /\bthis (project|package|repo|repository) is (deprecated|unmaintained|no longer maintained)\b/i.test(content);
       isMaintenanceModeReadme =
-        /\b(maintenance[- ]mode|in maintenance|no (new )?features?|bug[- ]fix(es)? only|security[- ]only|no longer actively (developed|maintained))\b/i.test(
-          content
-        ) ||
+        /\b(maintenance[- ]mode|in maintenance|no (new )?features?|bug[- ]fix(es)? only|security[- ]only|no longer actively (developed|maintained))\b/i.test(content) ||
         /^\s*#+[^#\n]*\b(maintenance mode|end[ -]of[ -]life|eol)\b/im.test(content);
       hasSponsorsFunding =
-        /opencollective\.com|github\.com\/sponsors|patreon\.com|liberapay\.com/i.test(
-          content
-        );
+        /opencollective\.com|github\.com\/sponsors|patreon\.com|liberapay\.com/i.test(content);
       hasCIBadge =
-        /travis-ci\.(org|com)|circleci\.com|github\.com\/[^/\s]+\/[^/\s]+\/actions/i.test(
-          content
-        );
+        /travis-ci\.(org|com)|circleci\.com|github\.com\/[^/\s]+\/[^/\s]+\/actions/i.test(content);
     }
   }
 
@@ -476,11 +400,8 @@ async function fetchSocialSignals(
     helpWantedResult.status === "fulfilled"
       ? helpWantedResult.value.data.total_count
       : 0;
-
   const staleWontfixCount =
-    staleResult.status === "fulfilled"
-      ? staleResult.value.data.total_count
-      : 0;
+    staleResult.status === "fulfilled" ? staleResult.value.data.total_count : 0;
 
   return {
     hasCommunityBadge,
@@ -522,10 +443,7 @@ async function fetchNpmDownloads(
   }
 }
 
-export async function fetchRepoHealth(
-  owner: string,
-  repo: string
-): Promise<RepoHealthData> {
+export async function fetchRepoHealth(owner: string, repo: string): Promise<RepoHealthData> {
   const octokit = client();
 
   let base: Awaited<ReturnType<typeof fetchRepoBase>>;
@@ -539,22 +457,31 @@ export async function fetchRepoHealth(
     const hasDiscussions =
       (base as unknown as Record<string, unknown>).has_discussions === true;
 
-    const [commitWindow, issueCounts, avgFirstResponseDays, release, hasSecurityPolicy, hasFunding, socialSignals, weeklyNpmDownloads] =
-      await Promise.all([
-        fetchCommitWindow(octokit, base.owner.login, base.name),
-        fetchIssueCounts(octokit, base.owner.login, base.name),
-        fetchAvgFirstResponseDays(octokit, base.owner.login, base.name),
-        fetchLatestRelease(octokit, base.owner.login, base.name),
-        detectSecurityPolicy(octokit, base.owner.login, base.name),
-        detectFunding(octokit, base.owner.login, base.name),
-        fetchSocialSignals(octokit, base.owner.login, base.name, hasDiscussions),
-        fetchNpmDownloads(octokit, base.owner.login, base.name),
-      ]);
+    const [
+      commitWindow,
+      issueCounts,
+      avgFirstResponseDays,
+      release,
+      hasSecurityPolicy,
+      hasFunding,
+      socialSignals,
+      weeklyNpmDownloads,
+    ] = await Promise.all([
+      fetchCommitWindow(octokit, base.owner.login, base.name),
+      fetchIssueCounts(octokit, base.owner.login, base.name),
+      fetchAvgFirstResponseDays(octokit, base.owner.login, base.name),
+      fetchLatestRelease(octokit, base.owner.login, base.name),
+      detectSecurityPolicy(octokit, base.owner.login, base.name),
+      detectFunding(octokit, base.owner.login, base.name),
+      fetchSocialSignals(octokit, base.owner.login, base.name, hasDiscussions),
+      fetchNpmDownloads(octokit, base.owner.login, base.name),
+    ]);
 
     const stars = base.stargazers_count;
     const forks = base.forks_count;
     const forkStarRatio = stars > 0 ? forks / stars : 0;
-    const repoAgeYears = (Date.now() - new Date(base.created_at).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    const repoAgeYears =
+      (Date.now() - new Date(base.created_at).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
 
     const recentRate = commitWindow.last30 / 30;
     const priorRate = commitWindow.prior60 / 60;

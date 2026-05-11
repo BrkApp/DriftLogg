@@ -8,7 +8,7 @@ import path from "path";
 import matter from "gray-matter";
 import * as githubLib from "../lib/github";
 import * as scoringLib from "../lib/scoring";
-import type { Risk } from "../lib/scoring";
+import type { Risk } from "../lib/types";
 const { fetchRepoHealth } = githubLib;
 const { computeHealthScore } = scoringLib;
 

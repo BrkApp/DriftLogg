@@ -2,21 +2,19 @@ import { NextResponse } from "next/server";
 import { fetchRepoHealth, ScanError } from "@/lib/github";
 import { computeHealthScore } from "@/lib/scoring";
 import { cache } from "@/lib/cache";
+import {
+  OWNER_RE,
+  REPO_RE,
+  OWNER_MAX,
+  REPO_MAX,
+  SCAN_TTL_MS,
+  RATE_PER_IP,
+  RATE_GLOBAL,
+  RATE_WINDOW_MS,
+} from "@/lib/constants";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// GitHub username/org: alphanumeric + hyphens only, max 39 chars
-const OWNER_RE = /^[A-Za-z0-9-]+$/;
-const OWNER_MAX = 39;
-// GitHub repo name: alphanumeric + hyphens + dots + underscores, max 100 chars
-const REPO_RE = /^[A-Za-z0-9._-]+$/;
-const REPO_MAX = 100;
-
-const RATE_PER_IP = 20;
-const RATE_GLOBAL = 500;
-const RATE_WINDOW_MS = 60_000;
-const SCAN_TTL_MS = 10 * 60 * 1000;
 
 // ⚠️ In-memory rate limiter resets on cold start.
 // For production scale, replace with Vercel KV or Upstash Redis.
@@ -44,7 +42,10 @@ function checkRateLimit(ip: string): { ok: true } | { ok: false; retryAfterSec: 
 
   while (globalHits.length > 0 && globalHits[0] <= cutoff) globalHits.shift();
   if (globalHits.length >= RATE_GLOBAL) {
-    const retryAfterSec = Math.max(1, Math.ceil((globalHits[0] + RATE_WINDOW_MS - now) / 1000));
+    const retryAfterSec = Math.max(
+      1,
+      Math.ceil((globalHits[0] + RATE_WINDOW_MS - now) / 1000)
+    );
     return { ok: false, retryAfterSec };
   }
 
@@ -60,18 +61,13 @@ function jsonError(message: string, status: number, extraHeaders?: Record<string
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
-  const isLocalhost = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(ip) || ip === "unknown";
+  const isLocalhost =
+    ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(ip) || ip === "unknown";
   const rl = isLocalhost ? { ok: true as const } : checkRateLimit(ip);
   if (!rl.ok) {
     return NextResponse.json(
-      {
-        error: "Too many scans. Please try again in a minute.",
-        retryAfter: rl.retryAfterSec,
-      },
-      {
-        status: 429,
-        headers: { "Retry-After": String(rl.retryAfterSec) },
-      }
+      { error: "Too many scans. Please try again in a minute.", retryAfter: rl.retryAfterSec },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } }
     );
   }
 
@@ -91,10 +87,7 @@ export async function POST(request: Request) {
   if (repo.length > REPO_MAX)
     return jsonError(`Repository name too long (max ${REPO_MAX} characters).`, 400);
   if (!OWNER_RE.test(owner))
-    return jsonError(
-      "Invalid owner format. Allowed characters: letters, digits, hyphen.",
-      400
-    );
+    return jsonError("Invalid owner format. Allowed characters: letters, digits, hyphen.", 400);
   if (!REPO_RE.test(repo))
     return jsonError(
       "Invalid repository format. Allowed characters: letters, digits, period, hyphen, underscore.",
@@ -114,11 +107,7 @@ export async function POST(request: Request) {
   try {
     const data = await fetchRepoHealth(owner, repo);
     const health = computeHealthScore(data);
-    const result = {
-      ...health,
-      data,
-      scannedAt: new Date().toISOString(),
-    };
+    const result = { ...health, data, scannedAt: new Date().toISOString() };
     await cache.set(cacheKey, result, SCAN_TTL_MS);
     return NextResponse.json(
       { ...result, fromCache: false },
@@ -149,7 +138,7 @@ export async function POST(request: Request) {
           return jsonError(err.message, err.status ?? 500);
       }
     }
-    const message = err instanceof Error ? err.message : "Erreur inattendue.";
+    const message = err instanceof Error ? err.message : "Unexpected error.";
     return jsonError(message, 500);
   }
 }

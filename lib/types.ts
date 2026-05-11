@@ -1,78 +1,130 @@
-export interface RepoMetadata {
+/** Canonical TypeScript types shared across the application. No business logic here. */
+
+// ── Risk & scoring ────────────────────────────────────────────────────────────
+
+export type Risk = "low" | "medium" | "high" | "critical";
+
+export interface ScoreBreakdown {
+  velocity: number;
+  responsiveness: number;
+  community: number;
+  freshness: number;
+  trust: number;
+  social: number;
+}
+
+export interface HealthScore {
+  score: number;
+  risk: Risk;
+  breakdown: ScoreBreakdown;
+  signals: string[];
+  prediction: string;
+}
+
+// ── GitHub data ───────────────────────────────────────────────────────────────
+
+export interface SocialSignals {
+  hasCommunityBadge: boolean;
+  hasDeprecatedBadge: boolean;
+  isMaintenanceModeReadme: boolean;
+  hasSponsorsFunding: boolean;
+  hasCIBadge: boolean;
+  hasDiscussions: boolean;
+  helpWantedCount: number;
+  staleWontfixCount: number;
+}
+
+export interface RepoHealthData {
   owner: string;
   repo: string;
   fullName: string;
   description: string | null;
   url: string;
-  stars: number;
-  forks: number;
-  openIssues: number;
-  watchers: number;
   language: string | null;
   license: string | null;
   archived: boolean;
   disabled: boolean;
-  defaultBranch: string;
-  createdAt: string;
-  updatedAt: string;
-  pushedAt: string;
-}
 
-export interface CommitActivity {
-  totalCommits: number;
+  stars: number;
+  forks: number;
+  forkStarRatio: number;
+  repoAgeYears: number;
+
+  lastHumanCommitAt: string | null;
   daysSinceLastCommit: number;
   commitsLast30Days: number;
-  commitsLast90Days: number;
-  uniqueAuthorsLast90Days: number;
-}
+  commitsPrior60Days: number;
+  velocityRatio: number;
 
-export interface IssueActivity {
+  activeContributors30d: number;
+  activeContributors90d: number;
+  topContributorShare90d: number;
+  isMaintenanceModeOnly: boolean;
+
   openIssues: number;
   closedIssuesLast90Days: number;
-  averageIssueAgeDays: number | null;
-  staleIssues: number;
-}
+  avgFirstResponseDays: number | null;
 
-export interface ReleaseActivity {
-  totalReleases: number;
+  lastReleaseAt: string | null;
   daysSinceLastRelease: number | null;
   lastReleaseTag: string | null;
+
+  hasSecurityPolicy: boolean;
+  hasFunding: boolean;
+  socialSignals: SocialSignals;
+  weeklyNpmDownloads: number | null;
 }
 
-export interface ScoreBreakdown {
-  commits: number;
-  issues: number;
-  releases: number;
-  maintenance: number;
-  community: number;
+// ── Scan API response ─────────────────────────────────────────────────────────
+
+export interface ScanRepoData {
+  fullName: string;
+  description: string | null;
+  url: string;
+  archived: boolean;
 }
 
-export type DriftRisk = "low" | "moderate" | "elevated" | "high" | "critical";
-
-export interface HealthReport {
-  metadata: RepoMetadata;
-  commits: CommitActivity;
-  issues: IssueActivity;
-  releases: ReleaseActivity;
-  score: number;
-  breakdown: ScoreBreakdown;
-  risk: DriftRisk;
-  signals: HealthSignal[];
+export interface ScanApiResponse extends HealthScore {
+  data: ScanRepoData;
   scannedAt: string;
+  fromCache?: boolean;
+  cachedAt?: string;
 }
 
-export interface HealthSignal {
-  level: "positive" | "warning" | "critical";
-  label: string;
-  detail: string;
+// ── Reports ───────────────────────────────────────────────────────────────────
+
+export interface ReportFrontmatter {
+  title: string;
+  date: string;
+  description: string;
+  tags: string[];
 }
 
-export interface ScanRequest {
-  owner: string;
-  repo: string;
+export interface ReportMeta extends ReportFrontmatter {
+  slug: string;
 }
 
-export interface ScanError {
-  error: string;
-  status?: number;
+export interface Report extends ReportMeta {
+  content: string;
+}
+
+// ── Cache ─────────────────────────────────────────────────────────────────────
+
+export interface CacheEntry {
+  value: unknown;
+  cachedAt: number;
+  expiresAt: number;
+}
+
+export interface CacheStats {
+  size: number;
+  hits: number;
+  misses: number;
+  hitRate: number;
+  driver: "memory" | "kv";
+}
+
+export interface CacheHit<T = unknown> {
+  value: T;
+  cachedAt: number;
 }

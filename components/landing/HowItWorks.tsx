@@ -1,4 +1,4 @@
-import { Reveal } from "./reveal";
+﻿import { Reveal } from "./Reveal";
 
 interface Step {
   number: string;
@@ -29,8 +29,8 @@ const ShieldIcon: Step["Icon"] = (props) => (
 );
 
 const STEPS: Step[] = [
-  { number: "1", title: "Paste your repo", body: "owner/repo or a github.com URL — that's it.", Icon: TerminalIcon },
-  { number: "2", title: "Get a health score", body: "Six signals scored 0–100 in under a minute.", Icon: GaugeIcon },
+  { number: "1", title: "Paste your repo", body: "owner/repo or a github.com URL â€” that's it.", Icon: TerminalIcon },
+  { number: "2", title: "Get a health score", body: "Six signals scored 0â€“100 in under a minute.", Icon: GaugeIcon },
   { number: "3", title: "Act before it breaks", body: "Plan the migration, alert your team, sleep tight.", Icon: ShieldIcon },
 ];
 
@@ -73,3 +73,4 @@ export function HowItWorks() {
     </section>
   );
 }
+

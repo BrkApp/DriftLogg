@@ -1,23 +1,6 @@
-type CacheValue = unknown;
+/** In-memory and Vercel KV cache driver with LRU eviction and TTL. */
 
-interface CacheEntry {
-  value: CacheValue;
-  cachedAt: number;
-  expiresAt: number;
-}
-
-export interface CacheStats {
-  size: number;
-  hits: number;
-  misses: number;
-  hitRate: number;
-  driver: "memory" | "kv";
-}
-
-export interface CacheHit<T = unknown> {
-  value: T;
-  cachedAt: number;
-}
+import type { CacheEntry, CacheStats, CacheHit } from "./types";
 
 interface KvClient {
   get: (key: string) => Promise<unknown>;
@@ -60,7 +43,6 @@ function createMemoryDriver(): CacheDriver {
         store.delete(key);
         return null;
       }
-      // LRU touch — re-insert moves to back
       store.delete(key);
       store.set(key, entry);
       return entry;
@@ -90,7 +72,7 @@ function createKvDriver(): CacheDriver {
   async function getKv(): Promise<KvClient> {
     if (!kvPromise) {
       kvPromise = (async () => {
-        // Dynamic import via variable name keeps the bundler from requiring
+        // Dynamic import via variable prevents the bundler from requiring
         // the module at build time when @vercel/kv is not installed.
         const moduleName = "@vercel/kv";
         const mod = (await import(moduleName)) as { kv: KvClient };
@@ -146,13 +128,9 @@ export const cache = {
     hits++;
     return { value: entry.value as T, cachedAt: entry.cachedAt };
   },
-  async set(key: string, value: CacheValue, ttlMs: number = DEFAULT_TTL_MS): Promise<void> {
+  async set(key: string, value: unknown, ttlMs: number = DEFAULT_TTL_MS): Promise<void> {
     const now = Date.now();
-    await driver.set(
-      key,
-      { value, cachedAt: now, expiresAt: now + ttlMs },
-      ttlMs
-    );
+    await driver.set(key, { value, cachedAt: now, expiresAt: now + ttlMs }, ttlMs);
   },
   async delete(key: string): Promise<void> {
     await driver.delete(key);

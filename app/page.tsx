@@ -7,7 +7,7 @@ import { ScoringGrid } from "@/components/landing/ScoringGrid";
 import { Pricing } from "@/components/landing/Pricing";
 import { WeeklyReports } from "@/components/landing/WeeklyReports";
 import { EmailCapture } from "@/components/shared/EmailCapture";
-import { Reveal } from "@/components/landing/reveal";
+import { Reveal } from "@/components/landing/Reveal";
 
 export default function HomePage() {
   return (

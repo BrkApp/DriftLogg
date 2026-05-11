@@ -1,7 +1,6 @@
-const OWNER_RE = /^[A-Za-z0-9-]+$/;
-const REPO_RE = /^[A-Za-z0-9._-]+$/;
-const OWNER_MAX = 39;
-const REPO_MAX = 100;
+/** Parses a GitHub URL or "owner/repo" slug into a validated { owner, repo } pair. */
+
+import { OWNER_RE, REPO_RE, OWNER_MAX, REPO_MAX } from "./constants";
 
 function validateParts(owner: string, repo: string): { owner: string; repo: string } | null {
   if (!owner || !repo) return null;
@@ -15,13 +14,13 @@ export function parseRepoInput(input: string): { owner: string; repo: string } |
   if (!trimmed) return null;
 
   const urlMatch = trimmed.match(
-    /^(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/\s]+)\/([^\/\s#?]+)/i
+    /^(?:https?:\/\/)?(?:www\.)?github\.com\/([^/\s]+)\/([^/\s#?]+)/i
   );
   if (urlMatch) {
     return validateParts(urlMatch[1], urlMatch[2].replace(/\.git$/, ""));
   }
 
-  const slugMatch = trimmed.match(/^([^\/\s]+)\/([^\/\s]+)$/);
+  const slugMatch = trimmed.match(/^([^/\s]+)\/([^/\s]+)$/);
   if (slugMatch) {
     return validateParts(slugMatch[1], slugMatch[2].replace(/\.git$/, ""));
   }

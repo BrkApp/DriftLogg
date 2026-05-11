@@ -35,7 +35,6 @@ export async function joinWaitlist(
     entries.push({ email, createdAt: new Date().toISOString() });
     fs.writeFileSync(filePath, JSON.stringify(entries, null, 2), "utf-8");
 
-    console.log(`[waitlist] +1: ${email} (total: ${entries.length})`);
     return { success: true, message: "You're on the list!" };
   } catch (err) {
     console.error("[waitlist] error:", err);

@@ -1,4 +1,4 @@
-import { Reveal } from "./reveal";
+﻿import { Reveal } from "./Reveal";
 
 interface Item {
   title: string;
@@ -74,3 +74,4 @@ export function ProblemSection() {
     </section>
   );
 }
+

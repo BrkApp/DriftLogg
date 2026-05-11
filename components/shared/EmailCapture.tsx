@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { joinWaitlist } from "@/app/actions/waitlist";
 
 type Variant = "full" | "inline";
 
@@ -22,14 +23,18 @@ export function EmailCapture({
 }: EmailCaptureProps) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
-    // eslint-disable-next-line no-console
-    console.log("[waitlist]", email);
-    setSubmitted(true);
-    setEmail("");
+    startTransition(async () => {
+      const result = await joinWaitlist(email);
+      if (result.success) {
+        setSubmitted(true);
+        setEmail("");
+      }
+    });
   }
 
   const formNode = submitted ? (
@@ -50,7 +55,7 @@ export function EmailCapture({
         />
         <button
           type="submit"
-          disabled={!email}
+          disabled={!email || isPending}
           className="group inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-dl-green px-5 text-sm font-bold text-black transition-all hover:bg-dl-green/90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {buttonLabel}
@@ -66,13 +71,9 @@ export function EmailCapture({
 
   return (
     <div className={`text-center ${className}`}>
-      <h2 className="text-3xl font-bold tracking-tight text-dl-fg sm:text-[32px]">
-        {title}
-      </h2>
+      <h2 className="text-3xl font-bold tracking-tight text-dl-fg sm:text-[32px]">{title}</h2>
       <div className="mx-auto mt-8 max-w-md">{formNode}</div>
-      {subtitle && (
-        <p className="mt-4 text-xs text-dl-fg-muted">{subtitle}</p>
-      )}
+      {subtitle && <p className="mt-4 text-xs text-dl-fg-muted">{subtitle}</p>}
     </div>
   );
 }

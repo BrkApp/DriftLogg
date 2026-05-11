@@ -1,4 +1,6 @@
-export type Risk = "critical" | "high" | "medium" | "low";
+import type { Risk } from "@/lib/types";
+
+export type { Risk };
 
 const STYLES: Record<Risk, { label: string; bg: string; text: string }> = {
   critical: { label: "CRITICAL", bg: "bg-dl-red", text: "text-white" },
