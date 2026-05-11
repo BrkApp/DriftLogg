@@ -33,3 +33,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local dev artifacts
+/logs/
+.claude/
+parse_xlsx_tmp.js
+.report-bundle.cjs

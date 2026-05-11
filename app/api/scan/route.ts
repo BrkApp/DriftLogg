@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchRepoHealth, ScanError } from "@/lib/github";
 import { computeHealthScore } from "@/lib/scoring";
+import { cache } from "@/lib/cache";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,17 +9,13 @@ export const dynamic = "force-dynamic";
 const NAME_RE = /^[A-Za-z0-9._-]+$/;
 const NAME_MAX = 100;
 
-const RATE_LIMIT = 10;
+const RATE_PER_IP = 20;
+const RATE_GLOBAL = 500;
 const RATE_WINDOW_MS = 60_000;
-const CACHE_TTL_MS = 60 * 60 * 1000;
+const SCAN_TTL_MS = 10 * 60 * 1000;
 
-interface CacheEntry {
-  value: unknown;
-  expiresAt: number;
-}
-
-const reportCache = new Map<string, CacheEntry>();
 const ipHits = new Map<string, number[]>();
+const globalHits: number[] = [];
 
 function getClientIp(req: Request): string {
   const fwd = req.headers.get("x-forwarded-for");
@@ -31,14 +28,23 @@ function getClientIp(req: Request): string {
 function checkRateLimit(ip: string): { ok: true } | { ok: false; retryAfterSec: number } {
   const now = Date.now();
   const cutoff = now - RATE_WINDOW_MS;
-  const recent = (ipHits.get(ip) ?? []).filter((t) => t > cutoff);
-  if (recent.length >= RATE_LIMIT) {
-    const retryAfterSec = Math.max(1, Math.ceil((recent[0] + RATE_WINDOW_MS - now) / 1000));
-    ipHits.set(ip, recent);
+
+  const ipRecent = (ipHits.get(ip) ?? []).filter((t) => t > cutoff);
+  if (ipRecent.length >= RATE_PER_IP) {
+    const retryAfterSec = Math.max(1, Math.ceil((ipRecent[0] + RATE_WINDOW_MS - now) / 1000));
+    ipHits.set(ip, ipRecent);
     return { ok: false, retryAfterSec };
   }
-  recent.push(now);
-  ipHits.set(ip, recent);
+
+  while (globalHits.length > 0 && globalHits[0] <= cutoff) globalHits.shift();
+  if (globalHits.length >= RATE_GLOBAL) {
+    const retryAfterSec = Math.max(1, Math.ceil((globalHits[0] + RATE_WINDOW_MS - now) / 1000));
+    return { ok: false, retryAfterSec };
+  }
+
+  ipRecent.push(now);
+  ipHits.set(ip, ipRecent);
+  globalHits.push(now);
   return { ok: true };
 }
 
@@ -48,12 +54,18 @@ function jsonError(message: string, status: number, extraHeaders?: Record<string
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
-  const rl = checkRateLimit(ip);
+  const isLocalhost = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(ip) || ip === "unknown";
+  const rl = isLocalhost ? { ok: true as const } : checkRateLimit(ip);
   if (!rl.ok) {
-    return jsonError(
-      `Trop de requêtes. Réessaie dans ${rl.retryAfterSec}s.`,
-      429,
-      { "Retry-After": String(rl.retryAfterSec) }
+    return NextResponse.json(
+      {
+        error: "Too many scans. Please try again in a minute.",
+        retryAfter: rl.retryAfterSec,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(rl.retryAfterSec) },
+      }
     );
   }
 
@@ -61,70 +73,65 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return jsonError("Corps JSON invalide.", 400);
+    return jsonError("Invalid JSON body.", 400);
   }
 
   const owner = typeof body.owner === "string" ? body.owner.trim() : "";
   const repo = typeof body.repo === "string" ? body.repo.trim() : "";
 
-  if (!owner || !repo) {
-    return jsonError("`owner` et `repo` sont requis.", 400);
-  }
-  if (owner.length > NAME_MAX || repo.length > NAME_MAX) {
-    return jsonError("Nom de repo ou d'owner trop long.", 400);
-  }
-  if (!NAME_RE.test(owner) || !NAME_RE.test(repo)) {
+  if (!owner || !repo) return jsonError("`owner` and `repo` are required.", 400);
+  if (owner.length > NAME_MAX || repo.length > NAME_MAX)
+    return jsonError("Repository or owner name too long.", 400);
+  if (!NAME_RE.test(owner) || !NAME_RE.test(repo))
     return jsonError(
-      "Format invalide. Caractères autorisés : lettres, chiffres, point, tiret, underscore.",
+      "Invalid format. Allowed characters: letters, digits, period, hyphen, underscore.",
       400
     );
-  }
 
-  const cacheKey = `${owner.toLowerCase()}/${repo.toLowerCase()}`;
-  const now = Date.now();
-  const cached = reportCache.get(cacheKey);
-  if (cached && cached.expiresAt > now) {
-    return NextResponse.json(cached.value, {
-      headers: { "X-DriftLogg-Cache": "hit" },
-    });
+  const cacheKey = `scan:${owner.toLowerCase()}/${repo.toLowerCase()}`;
+
+  const cached = await cache.get<Record<string, unknown>>(cacheKey);
+  if (cached) {
+    return NextResponse.json(
+      { ...cached.value, fromCache: true, cachedAt: new Date(cached.cachedAt).toISOString() },
+      { headers: { "X-Cache": "HIT" } }
+    );
   }
 
   try {
     const data = await fetchRepoHealth(owner, repo);
     const health = computeHealthScore(data);
-    const payload = {
+    const result = {
       ...health,
       data,
       scannedAt: new Date().toISOString(),
     };
-    reportCache.set(cacheKey, { value: payload, expiresAt: now + CACHE_TTL_MS });
-    return NextResponse.json(payload, {
-      headers: { "X-DriftLogg-Cache": "miss" },
-    });
+    await cache.set(cacheKey, result, SCAN_TTL_MS);
+    return NextResponse.json(
+      { ...result, fromCache: false },
+      { headers: { "X-Cache": "MISS" } }
+    );
   } catch (err) {
     if (err instanceof ScanError) {
       switch (err.kind) {
         case "not_found":
           return jsonError(
-            `Le dépôt ${owner}/${repo} est introuvable. Vérifie l'orthographe ou qu'il est public.`,
+            `Repository ${owner}/${repo} not found. Check the spelling or make sure it's public.`,
             404
           );
         case "private":
           return jsonError(
-            `Le dépôt ${owner}/${repo} semble privé. DriftLogg ne scanne que les repos publics.`,
+            `Repository ${owner}/${repo} appears to be private. DriftLogg only scans public repos.`,
             403
           );
         case "rate_limit":
           return jsonError(
-            "GitHub a temporairement bloqué nos requêtes (rate limit). Réessaie dans quelques minutes, ou configure GITHUB_TOKEN côté serveur pour passer à 5000 req/h.",
+            "GitHub temporarily blocked our requests (rate limit). Retry in a few minutes, or set GITHUB_TOKEN server-side to raise the limit to 5,000 req/h.",
             503,
             { "Retry-After": "300" }
           );
         case "network":
-          return jsonError(
-            "Impossible de joindre GitHub. Réessaie dans un instant.",
-            502
-          );
+          return jsonError("Could not reach GitHub. Please retry in a moment.", 502);
         default:
           return jsonError(err.message, err.status ?? 500);
       }

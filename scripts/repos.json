@@ -1,0 +1,19 @@
+[
+  { "owner": "request",      "repo": "request",      "expectedRisk": "critical", "expectedScoreRange": [0,  20]  },
+  { "owner": "tj",           "repo": "jade",          "expectedRisk": "critical", "expectedScoreRange": [0,  25]  },
+  { "owner": "bower",        "repo": "bower",         "expectedRisk": "critical", "expectedScoreRange": [0,  35]  },
+  { "owner": "substack",     "repo": "browserify",    "expectedRisk": "critical", "expectedScoreRange": [0,  35]  },
+  { "owner": "moment",       "repo": "moment",        "expectedRisk": "high",     "expectedScoreRange": [20, 60]  },
+  { "owner": "pugjs",        "repo": "pug",           "expectedRisk": "high",     "expectedScoreRange": [20, 60]  },
+  { "owner": "caolan",       "repo": "async",         "expectedRisk": "medium",   "expectedScoreRange": [35, 72]  },
+  { "owner": "lodash",       "repo": "lodash",        "expectedRisk": "medium",   "expectedScoreRange": [30, 70]  },
+  { "owner": "expressjs",    "repo": "express",       "expectedRisk": "medium",   "expectedScoreRange": [35, 75]  },
+  { "owner": "typicode",     "repo": "json-server",   "expectedRisk": "medium",   "expectedScoreRange": [20, 55]  },
+  { "owner": "axios",        "repo": "axios",         "expectedRisk": "medium",   "expectedScoreRange": [55, 100] },
+  { "owner": "sindresorhus", "repo": "got",           "expectedRisk": "medium",   "expectedScoreRange": [40, 75]  },
+  { "owner": "vitejs",       "repo": "vite",          "expectedRisk": "low",      "expectedScoreRange": [65, 100] },
+  { "owner": "tailwindlabs", "repo": "tailwindcss",   "expectedRisk": "low",      "expectedScoreRange": [65, 100] },
+  { "owner": "facebook",     "repo": "react",         "expectedRisk": "medium",   "expectedScoreRange": [55, 90]  },
+  { "owner": "vercel",       "repo": "next.js",       "expectedRisk": "low",      "expectedScoreRange": [70, 100] },
+  { "owner": "microsoft",    "repo": "vscode",        "expectedRisk": "low",      "expectedScoreRange": [65, 100] }
+]

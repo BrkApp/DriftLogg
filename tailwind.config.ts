@@ -44,6 +44,21 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        dl: {
+          bg: "var(--dl-bg)",
+          surface: "var(--dl-surface)",
+          border: "var(--dl-border)",
+          fg: "var(--dl-fg)",
+          "fg-muted": "var(--dl-fg-muted)",
+          green: "var(--dl-green)",
+          red: "var(--dl-red)",
+          amber: "var(--dl-amber)",
+          orange: "var(--dl-orange)",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-jetbrains)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       borderRadius: {
         lg: "var(--radius)",

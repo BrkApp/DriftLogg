@@ -120,7 +120,7 @@ we must:
 - [x] `/scan/[owner]/[repo]` results page (server-rendered)
 - [x] `/api/scan` endpoint
 - [x] Drift scoring algorithm v1
-- [ ] Loading skeletons for the results page
+- [x] Loading skeletons for the results page
 - [ ] OG image generation per scan (`/scan/[owner]/[repo]/opengraph-image.tsx`)
 - [ ] Basic analytics event on scan completion
 

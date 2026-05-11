@@ -1,39 +1,36 @@
-import Link from "next/link";
-import { ArrowRight, GitBranch } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Reveal } from "./reveal";
+import { ScanInput } from "@/components/shared/ScanInput";
 
 export function Hero() {
   return (
-    <section className="container relative flex flex-col items-center gap-6 py-24 text-center md:py-32">
-      <div className="inline-flex items-center gap-2 rounded-full border bg-secondary/40 px-4 py-1.5 text-xs font-medium text-muted-foreground">
-        <GitBranch className="h-3.5 w-3.5" />
-        Beta — free GitHub health check
+    <section className="relative overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-[radial-gradient(ellipse_at_top,rgba(0,255,136,0.06),transparent_70%)]"
+      />
+      <div className="mx-auto max-w-4xl px-4 pb-20 pt-20 sm:px-6 md:pt-32">
+        <Reveal>
+          <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-dl-fg md:text-[48px]">
+            Your dependencies will die. You&apos;ll know first.
+          </h1>
+        </Reveal>
+        <Reveal delay={120}>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-dl-fg-muted">
+            DriftLogg monitors open source package health and predicts decay
+            60–90 days before your build breaks.
+          </p>
+        </Reveal>
+        <Reveal delay={200}>
+          <div className="mt-10 max-w-2xl">
+            <ScanInput size="lg" />
+          </div>
+        </Reveal>
+        <Reveal delay={280}>
+          <p className="mt-4 font-mono text-[13px] text-dl-fg-muted">
+            No signup required · Free for 1 repo · Takes 30 seconds
+          </p>
+        </Reveal>
       </div>
-      <h1 className="max-w-4xl text-4xl font-bold tracking-tight md:text-6xl">
-        Predict open source decline{" "}
-        <span className="bg-gradient-to-r from-amber-500 to-red-500 bg-clip-text text-transparent">
-          before it breaks production
-        </span>
-      </h1>
-      <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
-        DriftLogg scores the packages your stack depends on across commit cadence, issue
-        triage, releases, and contributor signals — so you know what is drifting toward
-        abandonment before the next dependency bump.
-      </p>
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Button asChild size="lg">
-          <Link href="/scan">
-            Run a free health check
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
-        <Button asChild size="lg" variant="outline">
-          <Link href="#how-it-works">How it works</Link>
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        No signup. Public repos only. Results in seconds.
-      </p>
     </section>
   );
 }
