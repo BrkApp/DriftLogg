@@ -1,10 +1,12 @@
 "use client";
 
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export function ReportMarkdown({ content }: { content: string }) {
   return (
     <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
       components={{
         h2: ({ children }) => (
           <h2 className="mt-12 text-2xl font-bold text-dl-fg">{children}</h2>

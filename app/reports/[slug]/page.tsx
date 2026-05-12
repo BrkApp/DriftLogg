@@ -38,7 +38,7 @@ export default function ReportPage({ params }: Props) {
 
   return (
     <Layout>
-      <article className="mx-auto max-w-2xl px-4 py-20 sm:px-6">
+      <article className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
         <header className="mb-8">
           <div className="mb-4 flex items-center gap-3">
             <span className="font-mono text-[11px] uppercase tracking-widest text-dl-fg-muted">

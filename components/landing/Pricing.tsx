@@ -14,7 +14,7 @@ interface Plan {
 const PLANS: Plan[] = [
   {
     name: "Free",
-    price: "€0",
+    price: "$0",
     cadence: "",
     features: [
       "5 repos",
@@ -26,7 +26,7 @@ const PLANS: Plan[] = [
   },
   {
     name: "Pro",
-    price: "€29",
+    price: "$29",
     cadence: "/mo",
     features: [
       "50 repos monitored 24/7",
@@ -40,7 +40,7 @@ const PLANS: Plan[] = [
   },
   {
     name: "Team",
-    price: "€99",
+    price: "$99",
     cadence: "/mo",
     features: [
       "250 repos",

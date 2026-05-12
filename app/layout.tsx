@@ -51,9 +51,9 @@ const jsonLd = {
   operatingSystem: "Web",
   url: "https://driftlogg.dev",
   offers: [
-    { "@type": "Offer", price: "0", priceCurrency: "EUR", name: "Free" },
-    { "@type": "Offer", price: "29", priceCurrency: "EUR", name: "Pro" },
-    { "@type": "Offer", price: "99", priceCurrency: "EUR", name: "Team" },
+    { "@type": "Offer", price: "0", priceCurrency: "USD", name: "Free" },
+    { "@type": "Offer", price: "29", priceCurrency: "USD", name: "Pro" },
+    { "@type": "Offer", price: "99", priceCurrency: "USD", name: "Team" },
   ],
 };
 

@@ -26,7 +26,7 @@ export function CtaSection() {
           {"// continuous monitoring"}
         </p>
         <h3 className="mt-3 text-lg font-bold text-dl-fg sm:text-xl md:text-2xl">
-          Monitor this repo continuously — Team Plan $49/mo
+          Monitor this repo continuously — Pro Plan $29/mo
         </h3>
         <p className="mt-2 text-sm text-dl-fg-muted">
           Get a Slack or email alert the moment the score drops. CI integration to block risky
@@ -36,7 +36,7 @@ export function CtaSection() {
           href="/#pricing"
           className="mt-5 inline-flex h-10 items-center gap-2 rounded-md bg-dl-green px-4 font-mono text-sm font-semibold text-black transition-colors hover:bg-dl-green/90"
         >
-          See Team Plan <ArrowRight className="h-4 w-4" />
+          See Pro Plan <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
 
