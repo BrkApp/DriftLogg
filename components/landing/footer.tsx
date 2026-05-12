@@ -1,8 +1,7 @@
-import { Github, Mail, Twitter } from "lucide-react";
+import { Github, Mail } from "lucide-react";
 
 const LINKS = [
-  { href: "https://github.com", label: "GitHub", Icon: Github },
-  { href: "https://twitter.com", label: "Twitter", Icon: Twitter },
+  { href: "https://github.com/BrkApp/DriftLogg", label: "GitHub", Icon: Github },
   { href: "mailto:hi@driftlogg.dev", label: "Email", Icon: Mail },
 ];
 
