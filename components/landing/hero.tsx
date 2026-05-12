@@ -1,4 +1,4 @@
-﻿import { Reveal } from "./Reveal";
+import { Reveal } from "./Reveal";
 import { ScanInput } from "@/components/shared/ScanInput";
 
 export function Hero() {
@@ -10,24 +10,31 @@ export function Hero() {
       />
       <div className="mx-auto max-w-4xl px-4 pb-20 pt-20 sm:px-6 md:pt-32">
         <Reveal>
-          <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-dl-fg md:text-[48px]">
-            Your dependencies will die. You&apos;ll know first.
-          </h1>
-        </Reveal>
-        <Reveal delay={120}>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-dl-fg-muted">
-            DriftLogg monitors open source package health and predicts decay
-            60â€“90 days before your build breaks.
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-dl-green">
+            {"// open source health monitoring"}
           </p>
         </Reveal>
-        <Reveal delay={200}>
+        <Reveal delay={60}>
+          <h1 className="mt-4 text-balance text-4xl font-bold leading-[1.05] tracking-tight text-dl-fg md:text-[52px]">
+            Watch your dependencies
+            <br className="hidden sm:block" /> before they die.
+          </h1>
+        </Reveal>
+        <Reveal delay={140}>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-dl-fg-muted">
+            Snyk Advisor is gone. DriftLogg picks up where it left off —
+            continuous health monitoring, decay prediction, and alternative
+            recommendations for every package your stack depends on.
+          </p>
+        </Reveal>
+        <Reveal delay={220}>
           <div className="mt-10 max-w-2xl">
             <ScanInput size="lg" />
           </div>
         </Reveal>
-        <Reveal delay={280}>
+        <Reveal delay={300}>
           <p className="mt-4 font-mono text-[13px] text-dl-fg-muted">
-            No signup required Â· Free for 1 repo Â· Takes 30 seconds
+            No signup required · Free for 1 repo · Takes 30 seconds
           </p>
         </Reveal>
       </div>

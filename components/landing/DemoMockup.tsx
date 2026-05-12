@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, XCircle } from "lucide-react";
@@ -54,7 +54,7 @@ export function DemoMockup() {
 
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               <SignalCard tone="red" text="No commits in 67 days" />
-              <SignalCard tone="amber" text="Single maintainer â€” bus factor risk" />
+              <SignalCard tone="amber" text="Single maintainer — bus factor risk" />
               <SignalCard tone="amber" text="12 unresolved security issues" />
             </div>
           </div>
