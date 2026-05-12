@@ -20,8 +20,13 @@ export function Hero() {
             <br className="hidden sm:block" /> before they die.
           </h1>
         </Reveal>
-        <Reveal delay={140}>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-dl-fg-muted">
+        <Reveal delay={120}>
+          <p className="mt-5 font-mono text-sm text-dl-fg-muted/80">
+            For engineering teams shipping production code.
+          </p>
+        </Reveal>
+        <Reveal delay={180}>
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-dl-fg-muted">
             Snyk Advisor is gone. DriftLogg picks up where it left off —
             continuous health monitoring, decay prediction, and alternative
             recommendations for every package your stack depends on.

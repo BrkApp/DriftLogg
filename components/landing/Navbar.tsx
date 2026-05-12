@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Github, Menu, X } from "lucide-react";
+
+const GITHUB_URL = "https://github.com/BrkApp/DriftLogg";
 
 const LINKS: Array<{ href: string; label: string }> = [
   { href: "/#how", label: "How it works" },
@@ -40,6 +42,15 @@ export function Navbar() {
         </ul>
 
         <div className="flex items-center gap-3">
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="DriftLogg on GitHub"
+            className="hidden h-8 w-8 items-center justify-center rounded-md text-dl-fg-muted transition-colors hover:text-dl-fg sm:inline-flex"
+          >
+            <Github className="h-4 w-4" />
+          </a>
           <Link
             href="/scan"
             className={`hidden rounded-md border px-3 py-1.5 font-mono text-xs transition-colors sm:inline-flex ${
@@ -87,6 +98,17 @@ export function Navbar() {
               >
                 Scan your repo
               </Link>
+            </li>
+            <li>
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setOpen(false)}
+                className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 font-mono text-sm text-dl-fg-muted transition-colors hover:bg-dl-bg hover:text-dl-fg"
+              >
+                <Github className="h-4 w-4" /> GitHub
+              </a>
             </li>
           </ul>
         </div>

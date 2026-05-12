@@ -35,8 +35,7 @@ const PLANS: Plan[] = [
       "Alternative recommendations",
       "6-month score history",
     ],
-    cta: { label: "Join waitlist", href: "#waitlist", variant: "solid" },
-    highlight: true,
+    cta: { label: "Get early access", href: "#waitlist", variant: "solid" },
   },
   {
     name: "Team",
