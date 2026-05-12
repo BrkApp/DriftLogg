@@ -38,7 +38,8 @@ jobs:
       - name: Check if report was generated
         id: check
         run: |
-          if git diff --quiet; then
+          git add content/reports/
+          if git diff --staged --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
@@ -49,6 +50,5 @@ jobs:
         run: |
           git config user.name "DriftLogg Bot"
           git config user.email "bot@driftlogg.com"
-          git add content/reports/
           git commit -m "📊 Weekly risk report — $(date +%Y-%m-%d)"
           git push
