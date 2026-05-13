@@ -1,4 +1,6 @@
-﻿import { Reveal } from "./Reveal";
+﻿import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { Reveal } from "./Reveal";
 
 interface Card {
   title: string;
@@ -86,6 +88,17 @@ export function ScoringGrid() {
             </Reveal>
           ))}
         </div>
+        <Reveal delay={500}>
+          <div className="mt-10">
+            <Link
+              href="/methodology"
+              className="inline-flex items-center gap-2 font-mono text-sm text-dl-fg-muted transition-colors hover:text-dl-fg"
+            >
+              Read the full methodology
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

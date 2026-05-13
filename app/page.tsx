@@ -3,6 +3,7 @@ import { Hero } from "@/components/landing/Hero";
 import { DemoMockup } from "@/components/landing/DemoMockup";
 import { ProblemSection } from "@/components/landing/ProblemSection";
 import { ComparisonSection } from "@/components/landing/ComparisonSection";
+import { TrackRecord } from "@/components/landing/TrackRecord";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ScoringGrid } from "@/components/landing/ScoringGrid";
 import { Pricing } from "@/components/landing/Pricing";
@@ -17,6 +18,7 @@ export default function HomePage() {
       <DemoMockup />
       <ProblemSection />
       <ComparisonSection />
+      <TrackRecord />
       <HowItWorks />
       <ScoringGrid />
       <Pricing />

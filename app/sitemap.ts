@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/scan`,                        lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE}/reports`,                     lastModified: now, changeFrequency: "weekly",  priority: 0.7 },
     { url: `${SITE}/alternative-to-snyk-advisor`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE}/methodology`,                 lastModified: now, changeFrequency: "monthly", priority: 0.7 },
   ];
 
   const packagePages: MetadataRoute.Sitemap = KNOWN_PACKAGES.map((p) => ({

@@ -1,8 +1,15 @@
+import Link from "next/link";
 import { Github, Mail } from "lucide-react";
 
-const LINKS = [
+const ICON_LINKS = [
   { href: "https://github.com/BrkApp/DriftLogg", label: "GitHub", Icon: Github },
   { href: "mailto:hi@driftlogg.dev", label: "Email", Icon: Mail },
+];
+
+const TEXT_LINKS = [
+  { href: "/methodology",                label: "Methodology" },
+  { href: "/alternative-to-snyk-advisor", label: "vs Snyk Advisor" },
+  { href: "/reports",                    label: "Weekly reports" },
 ];
 
 export function Footer() {
@@ -18,19 +25,30 @@ export function Footer() {
               Built for engineering teams who&apos;ve been burned before.
             </p>
           </div>
-          <nav className="flex items-center gap-5">
-            {LINKS.map(({ href, label, Icon }) => (
-              <a
-                key={label}
+          <nav className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            {TEXT_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
                 href={href}
-                target={href.startsWith("http") ? "_blank" : undefined}
-                rel={href.startsWith("http") ? "noreferrer" : undefined}
-                aria-label={label}
-                className="text-dl-fg-muted transition-colors hover:text-dl-green"
+                className="font-mono text-xs text-dl-fg-muted transition-colors hover:text-dl-fg"
               >
-                <Icon className="h-5 w-5" />
-              </a>
+                {label}
+              </Link>
             ))}
+            <div className="flex items-center gap-4 pl-2">
+              {ICON_LINKS.map(({ href, label, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noreferrer" : undefined}
+                  aria-label={label}
+                  className="text-dl-fg-muted transition-colors hover:text-dl-green"
+                >
+                  <Icon className="h-5 w-5" />
+                </a>
+              ))}
+            </div>
           </nav>
         </div>
         <div className="border-t border-dl-border py-5 text-center">
