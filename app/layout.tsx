@@ -40,6 +40,9 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
   },
+  verification: {
+    google: "I48pNwVqwWwF-6xj92F425brWZt8uA93yWuACXaIKkQ",
+  },
 };
 
 const jsonLd = {
