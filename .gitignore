@@ -40,3 +40,4 @@ next-env.d.ts
 .claude/
 parse_xlsx_tmp.js
 .report-bundle.cjs
+.commit-msg.tmp
