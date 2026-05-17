@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchRepoHealth, ScanError } from "@/lib/github";
 import { computeHealthScore } from "@/lib/scoring";
 import { cache } from "@/lib/cache";
+import { incrementScanCount } from "@/lib/counter";
 import {
   OWNER_RE,
   REPO_RE,
@@ -105,6 +106,7 @@ export async function GET(request: Request) {
     const health = computeHealthScore(data);
     const result = { ...health, data, scannedAt: new Date().toISOString() };
     await cache.set(cacheKey, result, SCAN_TTL_MS);
+    void incrementScanCount();
     return jsonOk({ ...result, fromCache: false }, { "X-Cache": "MISS" });
   } catch (err) {
     if (err instanceof ScanError) {
@@ -170,6 +172,7 @@ export async function POST(request: Request) {
     const health = computeHealthScore(data);
     const result = { ...health, data, scannedAt: new Date().toISOString() };
     await cache.set(cacheKey, result, SCAN_TTL_MS);
+    void incrementScanCount();
     return jsonOk({ ...result, fromCache: false }, { "X-Cache": "MISS" });
   } catch (err) {
     if (err instanceof ScanError) {

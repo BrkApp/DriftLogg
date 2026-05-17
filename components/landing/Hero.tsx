@@ -1,7 +1,11 @@
 import { Reveal } from "./Reveal";
 import { ScanInput } from "@/components/shared/ScanInput";
 
-export function Hero() {
+interface HeroProps {
+  scanCount?: number;
+}
+
+export function Hero({ scanCount }: HeroProps) {
   return (
     <section className="relative overflow-hidden">
       <div
@@ -40,6 +44,11 @@ export function Hero() {
         <Reveal delay={300}>
           <p className="mt-4 font-mono text-[13px] text-dl-fg-muted">
             No signup required · Free for 1 repo · Takes 30 seconds
+            {scanCount != null && scanCount > 0 && (
+              <span className="ml-4 text-dl-fg-muted/60">
+                · {scanCount.toLocaleString("en-US")} repos scanned
+              </span>
+            )}
           </p>
         </Reveal>
       </div>

@@ -1,5 +1,6 @@
 import { Layout } from "@/components/shared/Layout";
 import { Hero } from "@/components/landing/Hero";
+import { getScanCount } from "@/lib/counter";
 import { DemoMockup } from "@/components/landing/DemoMockup";
 import { ProblemSection } from "@/components/landing/ProblemSection";
 import { ComparisonSection } from "@/components/landing/ComparisonSection";
@@ -10,10 +11,11 @@ import { Pricing } from "@/components/landing/Pricing";
 import { WeeklyReports } from "@/components/landing/WeeklyReports";
 import { NewsletterSection } from "@/components/landing/NewsletterSection";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const scanCount = await getScanCount();
   return (
     <Layout>
-      <Hero />
+      <Hero scanCount={scanCount} />
       <DemoMockup />
       <ProblemSection />
       <ComparisonSection />
