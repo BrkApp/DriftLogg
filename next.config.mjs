@@ -18,6 +18,9 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  // Locally (no GITHUB_TOKEN), /is/[slug] pages can be slow due to rate limits.
+  // In production on Vercel the token is set and calls complete in < 1s.
+  staticPageGenerationTimeout: 180,
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
