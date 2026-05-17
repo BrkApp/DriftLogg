@@ -16,6 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://driftlogg.dev"),
   title: "DriftLogg — Open Source Health Monitoring",
   description:
     "The Snyk Advisor replacement. DriftLogg monitors open source package health, predicts decay before it hits production, and suggests alternatives when a dependency starts declining.",
