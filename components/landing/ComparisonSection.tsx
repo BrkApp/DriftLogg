@@ -52,7 +52,7 @@ export function ComparisonSection() {
         </Reveal>
         <Reveal delay={160}>
           <div className="mt-10 overflow-x-auto rounded-xl border border-dl-border">
-            <table className="w-full border-collapse text-sm">
+            <table className="w-full min-w-[540px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-dl-border bg-dl-surface">
                   <th

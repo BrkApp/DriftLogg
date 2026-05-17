@@ -40,7 +40,7 @@ export function HowItWorks() {
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
         <Reveal>
           <h2 className="max-w-3xl text-3xl font-bold tracking-tight text-dl-fg sm:text-[32px]">
-            Three steps to never be surprised again
+            From repo URL to migration plan in 60 seconds
           </h2>
         </Reveal>
         <div className="mt-12 relative">

@@ -22,7 +22,7 @@ export function Footer() {
               DriftLogg
             </span>
             <p className="text-[13px] text-dl-fg-muted">
-              Built for engineering teams who&apos;ve been burned before.
+              Used by teams who learned the hard way that &apos;looks maintained&apos; isn&apos;t a strategy.
             </p>
           </div>
           <nav className="flex flex-wrap items-center gap-x-6 gap-y-3">

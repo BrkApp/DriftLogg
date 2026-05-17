@@ -93,7 +93,7 @@ export function ScanInput({
         <button
           type="submit"
           disabled={!canSubmit}
-          className={`group inline-flex shrink-0 items-center justify-center rounded-lg bg-dl-green font-bold text-black transition-all hover:bg-dl-green/90 disabled:cursor-not-allowed disabled:opacity-40 ${styles.button}`}
+          className={`group inline-flex w-full shrink-0 items-center justify-center rounded-lg bg-dl-green font-bold text-black transition-all hover:bg-dl-green/90 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto ${styles.button}`}
         >
           {pending ? (
             <Loader2 className="h-4 w-4 animate-spin" />

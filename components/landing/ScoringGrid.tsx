@@ -51,12 +51,12 @@ const SocialIcon: Card["Icon"] = (p) => (
 );
 
 const CARDS: Card[] = [
-  { title: "Commit Velocity", body: "Are commits slowing down?", Icon: VelocityIcon },
-  { title: "Maintainer Response", body: "How fast are issues answered?", Icon: ResponseIcon },
-  { title: "Community Health", body: "How many active contributors?", Icon: CommunityIcon },
-  { title: "Release Freshness", body: "When was the last release?", Icon: FreshnessIcon },
-  { title: "Trust Signals", body: "Security policy? Funding? CI/CD?", Icon: TrustIcon },
-  { title: "Social Signals", body: "Active community? Sponsors? Downloads?", Icon: SocialIcon },
+  { title: "Commit Velocity", body: "We flag repos with <2 commits/month over 90 days.", Icon: VelocityIcon },
+  { title: "Maintainer Response", body: "Issues open 90+ days with no maintainer reply score critical.", Icon: ResponseIcon },
+  { title: "Community Health", body: "Single-maintainer repos score 40% lower on this signal.", Icon: CommunityIcon },
+  { title: "Release Freshness", body: "No release in 12 months triggers a medium-risk flag automatically.", Icon: FreshnessIcon },
+  { title: "Trust Signals", body: "Missing SECURITY.md, license, or CI counts directly against the score.", Icon: TrustIcon },
+  { title: "Social Signals", body: "Weekly npm downloads and GitHub stars both feed this signal.", Icon: SocialIcon },
 ];
 
 export function ScoringGrid() {
@@ -70,7 +70,7 @@ export function ScoringGrid() {
         </Reveal>
         <Reveal delay={80}>
           <p className="mt-3 text-base text-dl-fg-muted">
-            Six signals, scored in seconds.
+            The 6 metrics that predicted moment.js, request, and node-sass dying — months before npm noticed.
           </p>
         </Reveal>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
