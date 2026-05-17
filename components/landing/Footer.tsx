@@ -9,6 +9,9 @@ const ICON_LINKS = [
 const TEXT_LINKS = [
   { href: "/methodology",                label: "Methodology" },
   { href: "/alternative-to-snyk-advisor", label: "vs Snyk Advisor" },
+  { href: "/vs/ossf-scorecard",          label: "vs OSSF" },
+  { href: "/vs/socket-dev",              label: "vs Socket" },
+  { href: "/vs/snyk",                    label: "vs Snyk" },
   { href: "/reports",                    label: "Weekly reports" },
 ];
 
