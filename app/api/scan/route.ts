@@ -16,6 +16,16 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
 // ⚠️ In-memory rate limiter resets on cold start.
 // For production scale, replace with Vercel KV or Upstash Redis.
 const ipHits = new Map<string, number[]>();
@@ -56,7 +66,58 @@ function checkRateLimit(ip: string): { ok: true } | { ok: false; retryAfterSec: 
 }
 
 function jsonError(message: string, status: number, extraHeaders?: Record<string, string>) {
-  return NextResponse.json({ error: message }, { status, headers: extraHeaders });
+  return NextResponse.json({ error: message }, { status, headers: { ...CORS_HEADERS, ...extraHeaders } });
+}
+
+function jsonOk(data: Record<string, unknown>, extraHeaders?: Record<string, string>) {
+  return NextResponse.json(data, { headers: { ...CORS_HEADERS, ...extraHeaders } });
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const owner = (searchParams.get("owner") ?? "").trim();
+  const repo  = (searchParams.get("repo") ?? "").trim();
+
+  if (!owner || !repo) return jsonError("`owner` and `repo` query params are required.", 400);
+  if (owner.length > OWNER_MAX) return jsonError(`Owner name too long (max ${OWNER_MAX} characters).`, 400);
+  if (repo.length > REPO_MAX)   return jsonError(`Repository name too long (max ${REPO_MAX} characters).`, 400);
+  if (!OWNER_RE.test(owner))    return jsonError("Invalid owner format. Allowed characters: letters, digits, hyphen.", 400);
+  if (!REPO_RE.test(repo))      return jsonError("Invalid repository format. Allowed characters: letters, digits, period, hyphen, underscore.", 400);
+
+  const ip = getClientIp(request);
+  const isLocalhost = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(ip) || ip === "unknown";
+  const rl = isLocalhost ? { ok: true as const } : checkRateLimit(ip);
+  if (!rl.ok) {
+    return jsonError("Too many scans. Please try again in a minute.", 429, { "Retry-After": String(rl.retryAfterSec) });
+  }
+
+  const cacheKey = `scan:${owner.toLowerCase()}/${repo.toLowerCase()}`;
+  const cached = await cache.get<Record<string, unknown>>(cacheKey);
+  if (cached) {
+    return jsonOk(
+      { ...cached.value, fromCache: true, cachedAt: new Date(cached.cachedAt).toISOString() },
+      { "X-Cache": "HIT" }
+    );
+  }
+
+  try {
+    const data = await fetchRepoHealth(owner, repo);
+    const health = computeHealthScore(data);
+    const result = { ...health, data, scannedAt: new Date().toISOString() };
+    await cache.set(cacheKey, result, SCAN_TTL_MS);
+    return jsonOk({ ...result, fromCache: false }, { "X-Cache": "MISS" });
+  } catch (err) {
+    if (err instanceof ScanError) {
+      switch (err.kind) {
+        case "not_found":  return jsonError(`Repository ${owner}/${repo} not found.`, 404);
+        case "private":    return jsonError(`Repository ${owner}/${repo} is private. DriftLogg only scans public repos.`, 403);
+        case "rate_limit": return jsonError("GitHub rate limit hit. Retry in a few minutes.", 503, { "Retry-After": "300" });
+        case "network":    return jsonError("Could not reach GitHub. Retry in a moment.", 502);
+        default:           return jsonError(err.message, err.status ?? 500);
+      }
+    }
+    return jsonError(err instanceof Error ? err.message : "Unexpected error.", 500);
+  }
 }
 
 export async function POST(request: Request) {
@@ -98,9 +159,9 @@ export async function POST(request: Request) {
 
   const cached = await cache.get<Record<string, unknown>>(cacheKey);
   if (cached) {
-    return NextResponse.json(
+    return jsonOk(
       { ...cached.value, fromCache: true, cachedAt: new Date(cached.cachedAt).toISOString() },
-      { headers: { "X-Cache": "HIT" } }
+      { "X-Cache": "HIT" }
     );
   }
 
@@ -109,10 +170,7 @@ export async function POST(request: Request) {
     const health = computeHealthScore(data);
     const result = { ...health, data, scannedAt: new Date().toISOString() };
     await cache.set(cacheKey, result, SCAN_TTL_MS);
-    return NextResponse.json(
-      { ...result, fromCache: false },
-      { headers: { "X-Cache": "MISS" } }
-    );
+    return jsonOk({ ...result, fromCache: false }, { "X-Cache": "MISS" });
   } catch (err) {
     if (err instanceof ScanError) {
       switch (err.kind) {

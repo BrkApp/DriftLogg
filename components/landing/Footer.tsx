@@ -13,6 +13,7 @@ const TEXT_LINKS = [
   { href: "/vs/socket-dev",              label: "vs Socket" },
   { href: "/vs/snyk",                    label: "vs Snyk" },
   { href: "/reports",                    label: "Weekly reports" },
+  { href: "/api-docs",                   label: "API" },
 ];
 
 export function Footer() {

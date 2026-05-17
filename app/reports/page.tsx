@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Layout } from "@/components/shared/Layout";
 import { getAllReports } from "@/lib/reports";
+import { EmailCapture } from "@/components/shared/EmailCapture";
 
 export const metadata = {
   title: "Risk Reports — DriftLogg",
@@ -73,6 +74,24 @@ export default function ReportsPage() {
             ))}
           </div>
         )}
+
+        {/* ── Newsletter capture ───────────────────────────────────── */}
+        <div className="mt-20 border-t border-dl-border pt-16">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-dl-green">
+            {"// dead package weekly"}
+          </p>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-dl-fg sm:text-[28px]">
+            Get the report in your inbox every Monday.
+          </h2>
+          <p className="mt-3 max-w-xl text-base text-dl-fg-muted">
+            We scan the 50 most depended-on npm packages every week. Subscribe
+            and we&apos;ll send you the ones heading toward abandonment before your
+            build notices.
+          </p>
+          <div className="mt-6 max-w-md">
+            <EmailCapture variant="inline" buttonLabel="Subscribe free" />
+          </div>
+        </div>
       </div>
     </Layout>
   );

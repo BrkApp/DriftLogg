@@ -16,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/vs/ossf-scorecard`,           lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/vs/socket-dev`,               lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/vs/snyk`,                     lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE}/api-docs`,                    lastModified: now, changeFrequency: "monthly", priority: 0.6 },
   ];
 
   const packagePages: MetadataRoute.Sitemap = KNOWN_PACKAGES.map((p) => ({
