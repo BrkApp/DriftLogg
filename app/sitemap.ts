@@ -26,12 +26,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  const reportPages: MetadataRoute.Sitemap = getAllReports().map((r) => ({
-    url: `${SITE}/reports/${r.slug}`,
-    lastModified: new Date(r.date),
-    changeFrequency: "monthly",
-    priority: 0.5,
-  }));
+  let reportPages: MetadataRoute.Sitemap = [];
+  try {
+    reportPages = getAllReports().map((r) => ({
+      url: `${SITE}/reports/${r.slug}`,
+      lastModified: new Date(r.date),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    }));
+  } catch {
+    // If report parsing fails (e.g. malformed frontmatter), degrade gracefully
+    // rather than returning a 500 that blocks Googlebot from reading the sitemap.
+  }
 
   return [...staticPages, ...packagePages, ...reportPages];
 }
