@@ -22,7 +22,13 @@ const nextConfig = {
   // In production on Vercel the token is set and calls complete in < 1s.
   staticPageGenerationTimeout: 180,
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      {
+        // Exclude sitemap and robots from security headers so crawlers aren't affected
+        source: "/((?!sitemap\\.xml|robots\\.txt).*)",
+        headers: securityHeaders,
+      },
+    ];
   },
   transpilePackages: [
     "react-markdown",
